@@ -7,8 +7,6 @@ on:
   release:
     types:
       - created
-  schedule:
-    - cron: '11 23 * * 2'
   workflow_dispatch:
 
 jobs:
