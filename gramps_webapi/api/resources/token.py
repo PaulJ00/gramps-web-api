@@ -22,7 +22,9 @@
 from typing import Any, Iterable
 
 import logging
-from flask import abort, current_app, request
+from flask import abort, current_app
+from flask_limiter.util import get_remote_address
+
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -92,9 +94,10 @@ class TokenResource(Resource):
         permissions = get_permissions(username=args["username"], tree=tree_id)
         login_logger = logging.getLogger("login")
         login_logger.info(
-            "Login success: user %s from %s",
+            "Login success: user %s (%s) from %s",
             args["username"],
-            request.remote_addr,
+            user_id,
+            get_remote_address(),
         )
         return get_tokens(
             user_id=user_id,
