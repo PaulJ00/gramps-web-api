@@ -71,6 +71,8 @@ class DefaultConfig(object):
     RATE_LIMIT_MEDIA_ARCHIVE = "1 per day"
     REGISTRATION_DISABLED = False
     LOG_LEVEL = "INFO"
+    LOGIN_LOG_PATH = str(Path.cwd() / "logs" / "login.log")
+    AUTH_LOG_PATH = str(Path.cwd() / "logs" / "auth.log")
     LLM_BASE_URL = None
     LLM_MODEL = ""
     LLM_MAX_CONTEXT_LENGTH = 50000
