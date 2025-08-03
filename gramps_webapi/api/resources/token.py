@@ -24,6 +24,7 @@ from typing import Any, Iterable
 import logging
 from flask import abort, current_app
 from flask_limiter.util import get_remote_address
+
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,

@@ -23,7 +23,8 @@ from functools import wraps
 from typing import Iterable
 
 import logging
-from flask import abort
+
+from flask import abort, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_limiter.util import get_remote_address
