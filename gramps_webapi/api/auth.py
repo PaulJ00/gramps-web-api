@@ -22,11 +22,26 @@
 from functools import wraps
 from typing import Iterable
 
-from flask import abort
-from flask_jwt_extended import get_jwt, verify_jwt_in_request
+import logging
+from flask import abort, request
+from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
 from ..auth.const import CLAIM_LIMITED_SCOPE
+
+
+AUTH_LOGGER = logging.getLogger("auth")
+
+
+def _log_authentication() -> None:
+    """Log a successful authentication."""
+    try:
+        identity = get_jwt_identity()
+    except Exception:  # pragma: no cover - fallback if identity missing
+        identity = "unknown"
+    AUTH_LOGGER.info(
+        "Authentication success: user %s from %s", identity, request.remote_addr
+    )
 
 
 def jwt_required(func):
@@ -38,6 +53,7 @@ def jwt_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
+        _log_authentication()
         claims = get_jwt()
         if claims.get(CLAIM_LIMITED_SCOPE):
             raise NoAuthorizationError
@@ -55,6 +71,7 @@ def fresh_jwt_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request(fresh=True)
+        _log_authentication()
         claims = get_jwt()
         if claims.get(CLAIM_LIMITED_SCOPE):
             raise NoAuthorizationError
@@ -72,6 +89,7 @@ def jwt_limited_scope_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request()
+        _log_authentication()
         claims = get_jwt()
         if not claims.get(CLAIM_LIMITED_SCOPE):
             raise NoAuthorizationError
@@ -86,6 +104,7 @@ def jwt_refresh_token_required(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         verify_jwt_in_request(refresh=True)
+        _log_authentication()
         return func(*args, **kwargs)
 
     return wrapper

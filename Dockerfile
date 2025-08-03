@@ -43,6 +43,7 @@ RUN mkdir /app/thumbnail_cache
 RUN mkdir /app/cache && mkdir /app/cache/reports && mkdir /app/cache/export \
     && mkdir /app/cache/request_cache && mkdir /app/cache/persistent_cache
 RUN mkdir /app/tmp && mkdir /app/persist
+RUN mkdir /app/logs
 RUN mkdir -p /root/gramps/gramps$GRAMPS_VERSION/plugins
 # set config options
 ENV GRAMPSWEB_USER_DB_URI=sqlite:////app/users/users.sqlite
@@ -54,6 +55,8 @@ ENV GRAMPSWEB_REQUEST_CACHE_CONFIG__CACHE_DIR=/app/cache/request_cache
 ENV GRAMPSWEB_PERSISTENT_CACHE_CONFIG__CACHE_DIR=/app/cache/persistent_cache
 ENV GRAMPSWEB_REPORT_DIR=/app/cache/reports
 ENV GRAMPSWEB_EXPORT_DIR=/app/cache/export
+ENV GRAMPSWEB_LOGIN_LOG_PATH=/app/logs/login.log
+ENV GRAMPSWEB_AUTH_LOG_PATH=/app/logs/auth.log
 ENV GRAMPSHOME=/root
 ENV GRAMPS_DATABASE_PATH=/root/.gramps/grampsdb
 
@@ -98,6 +101,7 @@ model = SentenceTransformer('sentence-transformers/distiluse-base-multilingual-c
     fi
 
 EXPOSE 5000
+VOLUME /app/logs
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]

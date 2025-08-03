@@ -21,6 +21,7 @@
 
 from typing import Any, Iterable
 
+import logging
 from flask import abort, current_app, request
 from flask_jwt_extended import (
     create_access_token,
@@ -89,7 +90,8 @@ class TokenResource(Resource):
         if is_tree_disabled(tree=tree_id):
             abort_with_message(503, "This tree is temporarily disabled")
         permissions = get_permissions(username=args["username"], tree=tree_id)
-        current_app.logger.info(
+        login_logger = logging.getLogger("login")
+        login_logger.info(
             "Login success: user %s from %s",
             args["username"],
             request.remote_addr,
