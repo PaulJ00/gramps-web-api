@@ -22,6 +22,7 @@
 import logging
 import os
 import warnings
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from flask import Flask, abort, g, send_from_directory
@@ -44,6 +45,29 @@ from .config import DefaultConfig, DefaultConfigJWT
 from .const import API_PREFIX, ENV_CONFIG_FILE, TREE_MULTI
 from .dbmanager import WebDbManager
 from .util.celery import create_celery
+
+
+def setup_special_loggers(app: Flask) -> None:
+    """Configure dedicated loggers for login and authentication events."""
+    log_paths = {
+        "login": app.config.get("LOGIN_LOG_PATH"),
+        "auth": app.config.get("AUTH_LOG_PATH"),
+    }
+    for name, path in log_paths.items():
+        if not path:
+            continue
+        log_file = Path(path)
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        handler = logging.FileHandler(log_file)
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        )
+        logger = logging.getLogger(name)
+        logger.setLevel(logging.INFO)
+        logger.propagate = False
+        logger.handlers.clear()
+        logger.addHandler(handler)
 
 
 def deprecated_config_from_env(app):
@@ -108,6 +132,8 @@ def create_app(config: Optional[Dict[str, Any]] = None, config_from_env: bool = 
     for option in required_options:
         if not app.config.get(option):
             raise ValueError(f"{option} must be specified")
+
+    setup_special_loggers(app)
 
     # environment variable to set the Gramps database path.
     # Needed for backwards compatibility from Gramps 6.0 onwards
