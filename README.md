@@ -15,3 +15,8 @@ Gramps Web API is the backend of [Gramps Web](https://www.grampsweb.org/), a gen
 ## Related projects
 
 - Gramps Web frontend repository: https://github.com/gramps-project/gramps-web
+
+## Logging
+
+Authentication events are written to `logs/auth.log`. This file is rotated
+automatically when it reaches 30 MB, keeping up to 10 backup files.

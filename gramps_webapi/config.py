@@ -73,6 +73,8 @@ class DefaultConfig(object):
     LOG_LEVEL = "INFO"
     LOGIN_LOG_PATH = str(Path.cwd() / "logs" / "login.log")
     AUTH_LOG_PATH = str(Path.cwd() / "logs" / "auth.log")
+    AUTH_LOG_MAX_BYTES = 30 * 1024 * 1024
+    AUTH_LOG_BACKUP_COUNT = 10
     LLM_BASE_URL = None
     LLM_MODEL = ""
     LLM_MAX_CONTEXT_LENGTH = 50000
