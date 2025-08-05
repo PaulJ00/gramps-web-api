@@ -59,14 +59,14 @@ def setup_special_loggers(app: Flask) -> None:
             continue
         log_file = Path(path)
         log_file.parent.mkdir(parents=True, exist_ok=True)
-        if name == "auth":
-            handler = RotatingFileHandler(
+        if name == "auth" or name == "login":
+            handler: RotatingFileHandler = RotatingFileHandler(
                 log_file,
                 maxBytes=app.config.get("AUTH_LOG_MAX_BYTES", 30 * 1024 * 1024),
                 backupCount=app.config.get("AUTH_LOG_BACKUP_COUNT", 10),
             )
         else:
-            handler = logging.FileHandler(log_file)
+            handler = RotatingFileHandler(log_file)
         handler.setLevel(logging.INFO)
         handler.setFormatter(
             logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
