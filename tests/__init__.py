@@ -20,6 +20,15 @@
 
 """Unit test package for gramps_webapi."""
 
+import pytest
+
+# Skip entire test suite if the optional ``gramps`` dependency is not
+# available. The web API relies on the external Gramps project for access
+# to example databases used throughout the tests. In environments where
+# the heavy ``gramps`` package is not installed we gracefully skip the
+# tests instead of failing during collection.
+pytest.importorskip("gramps")
+
 import gzip
 import os
 import shutil
