@@ -22,6 +22,7 @@
 import logging
 import os
 import warnings
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -47,6 +48,16 @@ from .dbmanager import WebDbManager
 from .util.celery import create_celery
 
 
+class RecreatingRotatingFileHandler(RotatingFileHandler):
+    """Rotating file handler that recreates log file if it gets deleted."""
+
+    def emit(self, record):  # type: ignore[override]
+        if self.stream and not os.path.exists(self.baseFilename):
+            self.stream.close()
+            self.stream = self._open()
+        super().emit(record)
+
+
 def setup_special_loggers(app: Flask) -> None:
     """Configure dedicated loggers for login and authentication events."""
     log_paths = {
@@ -58,7 +69,13 @@ def setup_special_loggers(app: Flask) -> None:
             continue
         log_file = Path(path)
         log_file.parent.mkdir(parents=True, exist_ok=True)
-        handler = logging.FileHandler(log_file)
+        handler = RecreatingRotatingFileHandler(
+            log_file,
+            maxBytes=20 * 1024 * 1024,
+            backupCount=1,
+            encoding="utf-8",
+            delay=True,
+        )
         handler.setLevel(logging.INFO)
         handler.setFormatter(
             logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
