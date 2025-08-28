@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: "Gramps Web API"
-  version: "3.2.1"
+  version: "3.3.0"
   description: >
     The Gramps Web API is a REST API that provides access to family tree databases generated and maintained with Gramps, a popular Open Source genealogical research software package.
 
@@ -874,6 +874,14 @@ paths:
             ratings | Returns citation count and highest confidence rating for events
             families | Returns family information with parents, children, and key relationship between parents
             references | Returns information about objects that refer to the person
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the profile.name_display key
+          Intended for setting the full name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -1006,6 +1014,14 @@ paths:
             ratings | Returns citation count and highest confidence rating for events
             families | Returns family information with parents, children, and key relationship between parents
             references | Returns information about objects that refer to the person
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the profile.name_display key
+          Intended for setting the full name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -1313,6 +1329,47 @@ paths:
           description: "Unprocessable Entity: Invalid or bad parameter provided."
 
 
+  /people/{handle}/dna/ydna:
+    get:
+      tags:
+        - people
+      summary: Get Y-DNA clade lineage for a person
+      description: >
+        Returns the Y-DNA clade lineage for the person with the given handle, including clade age and confidence intervals if available.
+      parameters:
+        - name: handle
+          in: path
+          required: true
+          type: string
+          description: The handle of the person.
+        - name: raw
+          in: query
+          required: false
+          type: boolean
+          description: If true, include raw data in the response.
+      responses:
+        200:
+          description: Successful response with clade lineage information.
+          schema:
+            type: object
+            properties:
+              clade_lineage:
+                type: array
+                items:
+                  $ref: '#/definitions/CladeInfo'
+              raw_data:
+                description: The raw Y chromosome SNP data in a format compatible with the yclade library.
+                type: string
+                example: M215+, BY61636-, FTF15749-, TY15744-
+        401:
+          description: "Unauthorized: Missing authorization header."
+        404:
+          description: "Person not found."
+        422:
+          description: "Unprocessable Entity: Invalid or bad parameter provided."
+
+
+
 ##############################################################################
 # Endpoint - Families
 ##############################################################################
@@ -1474,6 +1531,14 @@ paths:
             events | Returns family event list with name, date and location
             ratings | Returns citation count and highest confidence rating for events
             references | Returns information about objects that refer to the family
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -1603,6 +1668,14 @@ paths:
             events | Returns family event list with name, date and location
             ratings | Returns citation count and highest confidence rating for events
             references | Returns information about objects that refer to the family
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -1944,6 +2017,14 @@ paths:
             ratings | Returns citation count and highest confidence rating for events
             participants | Returns information about the event participants
             references | Returns information about objects that refer to the family
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -2061,6 +2142,14 @@ paths:
             events | Returns event name, date and location
             ratings | Returns citation count and highest confidence rating for events
             references | Returns information about objects that refer to the event
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -2656,6 +2745,14 @@ paths:
             ------ | --------
             all | Returns all information
             references | Returns information about objects that refer to the place
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -2765,6 +2862,14 @@ paths:
             ------ | --------
             all | Returns all information
             references | Returns information about objects that refer to the place
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -3562,6 +3667,14 @@ paths:
             ------ | --------
             all | Returns all information
             references | Returns information about objects that refer to the place
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       - name: filemissing
         in: query
         required: false
@@ -3673,6 +3786,14 @@ paths:
             ------ | --------
             all | Returns all information
             references | Returns information about objects that refer to the place
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       responses:
         200:
           description: "OK: Successful operation."
@@ -6137,6 +6258,14 @@ paths:
             span | Returns elapsed time span from union that formed the family and familial events
             events | Returns event list with name, date and location
             families | Returns family information with parents, children, and key relationship between parents
+      - name: name_format
+        in: query
+        required: false
+        type: string
+        description: >
+          Specifies the format for the values corresponding to the name_display key
+          Intended for setting the full person's name format including given name, surnames, etc. by the user
+          Refer to gramps.gen.display.name module for the format string syntax
       - name: semantic
         in: query
         required: false
@@ -7425,6 +7554,66 @@ paths:
 definitions:
 
 ##############################################################################
+# Model - CladeAgeInfo
+##############################################################################
+
+  CladeAgeInfo:
+    type: object
+    properties:
+      formed:
+        type: number
+        format: float
+        description: How many years ago the clade was formed.
+        nullable: true
+        example: 4500
+      formed_confidence_interval:
+        type: array
+        items:
+          type: number
+          format: float
+        minItems: 2
+        maxItems: 2
+        description: 95% confidence interval for the formed age.
+        nullable: true
+      most_recent_common_ancestor:
+        type: number
+        format: float
+        description: How many years ago the most recent common ancestor was born.
+        nullable: true
+        example: 3800
+      most_recent_common_ancestor_confidence_interval:
+        type: array
+        items:
+          type: number
+          format: float
+        minItems: 2
+        maxItems: 2
+        description: 95% confidence interval for the most recent common ancestor age.
+        nullable: true
+
+##############################################################################
+# Model - CladeInfo
+##############################################################################
+
+  CladeInfo:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The ID of the clade.
+        example: BY61636
+      age_info:
+        $ref: '#/definitions/CladeAgeInfo'
+        description: The age information for the clade.
+        nullable: true
+      score:
+        type: number
+        format: float
+        description: The score for the clade (optional).
+        nullable: true
+        example: 9.0
+
+##############################################################################
 # Model - Token
 ##############################################################################
 
@@ -7955,6 +8144,10 @@ definitions:
         description: "The unique identifier for a person."
         type: string
         example: "GNUJQCL9MD64AM56OH"
+      name_display:
+        description: "Preferred name of the person in a predefined display format"
+        type: string
+        example: "Warner, Mary Grace Elizabeth (Mary)"
       name_given:
         description: "Preferred given name of the person."
         type: string
@@ -10892,6 +11085,10 @@ definitions:
         description: "The unique identifier for a person."
         type: string
         example: "ORFKQC4KLWEGTGR19L"
+      name_display:
+        description: "Preferred name of the person in a predefined display format"
+        type: string
+        example: "Warner, Mary Grace Elizabeth (Mary)"
       name_given:
         description: "Preferred given name of the person."
         type: string
