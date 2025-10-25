@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   title: "Gramps Web API"
-  version: "3.3.0"
+  version: "3.4.0"
   description: >
     The Gramps Web API is a REST API that provides access to family tree databases generated and maintained with Gramps, a popular Open Source genealogical research software package.
 
@@ -169,6 +169,157 @@ paths:
 
 
 ##############################################################################
+# Endpoint - OIDC Authentication
+##############################################################################
+
+  /oidc/config:
+    get:
+      tags:
+      - authentication
+      summary: "Get OIDC configuration and available providers."
+      operationId: getOIDCConfig
+      responses:
+        200:
+          description: "OK: Successful operation."
+          schema:
+            $ref: "#/definitions/OIDCConfig"
+
+  /oidc/login/:
+    get:
+      tags:
+      - authentication
+      summary: "Initiate OIDC login flow."
+      operationId: oidcLogin
+      parameters:
+      - name: provider
+        in: query
+        required: true
+        type: string
+        description: "The OIDC provider ID (e.g., google, microsoft, github, custom)"
+        example: "google"
+      responses:
+        302:
+          description: "Redirect: Redirects to OIDC provider for authentication."
+        400:
+          description: "Bad Request: Invalid or unavailable provider."
+        405:
+          description: "Method Not Allowed: OIDC authentication is not enabled."
+        500:
+          description: "Internal Server Error: OIDC client not properly initialized."
+
+  /oidc/callback/:
+    get:
+      tags:
+      - authentication
+      summary: "Handle OIDC callback and create JWT tokens."
+      operationId: oidcCallback
+      parameters:
+      - name: provider
+        in: query
+        required: true
+        type: string
+        description: "The OIDC provider ID"
+        example: "google"
+      - name: code
+        in: query
+        required: false
+        type: string
+        description: "Authorization code from OIDC provider"
+      - name: state
+        in: query
+        required: false
+        type: string
+        description: "State parameter from OIDC provider"
+      - name: session_state
+        in: query
+        required: false
+        type: string
+        description: "Session state parameter from OIDC provider"
+      - name: error
+        in: query
+        required: false
+        type: string
+        description: "Error parameter from OIDC provider"
+      - name: error_description
+        in: query
+        required: false
+        type: string
+        description: "Error description from OIDC provider"
+      responses:
+        302:
+          description: "Redirect: Redirects to frontend with JWT tokens."
+        400:
+          description: "Bad Request: Invalid provider or authentication error."
+        405:
+          description: "Method Not Allowed: OIDC authentication is not enabled."
+        500:
+          description: "Internal Server Error: OIDC client error."
+
+  /oidc/logout/:
+    get:
+      tags:
+      - authentication
+      summary: "Get OIDC logout URL for a provider."
+      operationId: oidcLogout
+      parameters:
+      - name: provider
+        in: query
+        required: true
+        type: string
+        description: "The OIDC provider ID"
+        example: "google"
+      - name: id_token
+        in: query
+        required: false
+        type: string
+        description: "ID token to use as id_token_hint"
+      - name: post_logout_redirect_uri
+        in: query
+        required: false
+        type: string
+        description: "URI to redirect to after logout"
+      responses:
+        200:
+          description: "OK: Returns logout URL or null if provider doesn't support logout."
+          schema:
+            type: object
+            properties:
+              logout_url:
+                type: string
+                description: "The end_session_endpoint URL with parameters, or null if not available"
+        400:
+          description: "Bad Request: Invalid or unavailable provider."
+        405:
+          description: "Method Not Allowed: OIDC authentication is not enabled."
+        500:
+          description: "Internal Server Error: OIDC client error."
+
+  /oidc/backchannel-logout/:
+    post:
+      tags:
+      - authentication
+      summary: "Handle OIDC backchannel logout request from provider."
+      operationId: oidcBackchannelLogout
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: logout_token
+        in: formData
+        required: true
+        type: string
+        description: "The logout token JWT from the OIDC provider"
+      responses:
+        200:
+          description: "OK: Logout request processed successfully."
+        400:
+          description: "Bad Request: Invalid or missing logout_token."
+        405:
+          description: "Method Not Allowed: OIDC authentication is not enabled."
+        500:
+          description: "Internal Server Error: Error processing logout request."
+
+
+##############################################################################
 # Endpoint - Users
 ##############################################################################
 
@@ -183,6 +334,29 @@ paths:
       responses:
         200:
           description: "OK: Successful operation."
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                name:
+                  description: "The user's username."
+                  type: string
+                email:
+                  description: "The user's e-mail address."
+                  type: string
+                full_name:
+                  description: "The user's full name."
+                  type: string
+                role:
+                  description: "The user's role ID."
+                  type: number
+                tree:
+                  description: "The user's tree."
+                  type: string
+                account_source:
+                  description: "The source of the user account (e.g., 'Local' or OIDC provider name)."
+                  type: string
         401:
           description: "Unauthorized: Missing authorization header."
         422:
@@ -244,6 +418,27 @@ paths:
       responses:
         200:
           description: "OK: Successful operation."
+          schema:
+            type: object
+            properties:
+              name:
+                description: "The user's username."
+                type: string
+              email:
+                description: "The user's e-mail address."
+                type: string
+              full_name:
+                description: "The user's full name."
+                type: string
+              role:
+                description: "The user's role ID."
+                type: number
+              tree:
+                description: "The user's tree."
+                type: string
+              account_source:
+                description: "The source of the user account (e.g., 'Local' or OIDC provider name)."
+                type: string
         401:
           description: "Unauthorized: Missing authorization header."
         403:
@@ -4951,6 +5146,114 @@ paths:
         422:
           description: "Unprocessable Entity: Invalid or bad parameter provided."
 
+  /transactions/history/{transaction_id}/undo:
+    get:
+      tags:
+      - transactions
+      summary: "Check if a specific database transaction can be undone without conflicts."
+      operationId: checkUndoTransaction
+      security:
+        - Bearer: []
+      parameters:
+      - name: transaction_id
+        in: path
+        required: true
+        type: integer
+        description: "The ID of the transaction to check for undo feasibility."
+      responses:
+        200:
+          description: "OK: Undo feasibility check completed successfully."
+          schema:
+            type: object
+            properties:
+              transaction_id:
+                type: integer
+                description: "The ID of the transaction that was checked."
+              can_undo_without_force:
+                type: boolean
+                description: "Whether the transaction can be undone without using the force parameter."
+              total_changes:
+                type: integer
+                description: "Total number of changes in the transaction."
+              conflicts_count:
+                type: integer
+                description: "Number of conflicts that would prevent undo without force."
+              conflicts:
+                type: array
+                description: "List of specific conflicts found during the check."
+                items:
+                  type: object
+                  properties:
+                    change_index:
+                      type: integer
+                      description: "Index of the conflicting change within the transaction."
+                    object_class:
+                      type: string
+                      description: "Class of the conflicting object (e.g., 'Person', 'Family')."
+                    handle:
+                      type: string
+                      description: "Handle of the conflicting object."
+                    conflict_type:
+                      type: string
+                      description: "Type of conflict (e.g., 'object_changed', 'object_exists')."
+                    description:
+                      type: string
+                      description: "Human-readable description of the conflict."
+        400:
+          description: "Bad Request: Malformed request could not be parsed."
+        401:
+          description: "Unauthorized: Missing authorization header."
+        403:
+          description: "Forbidden: Insufficient permissions to check undo transactions."
+        404:
+          description: "Not Found: Transaction with the specified ID was not found."
+        422:
+          description: "Unprocessable Entity: Invalid or bad parameter provided."
+    post:
+      tags:
+      - transactions
+      summary: "Undo a specific database transaction using background processing."
+      operationId: undoTransaction
+      security:
+        - Bearer: []
+      parameters:
+      - name: transaction_id
+        in: path
+        required: true
+        type: integer
+        description: "The ID of the transaction to undo."
+      - name: force
+        in: query
+        required: false
+        type: boolean
+        description: "If true, force undoing the transaction even if objects have been modified since the original transaction."
+      responses:
+        200:
+          description: "OK: Transaction undo completed successfully."
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/Transaction"
+        202:
+          description: "Accepted: Transaction undo will be applied in the background."
+          schema:
+            type: object
+            properties:
+              task:
+                $ref: "#/definitions/TaskReference"
+        400:
+          description: "Bad Request: Malformed request could not be parsed."
+        401:
+          description: "Unauthorized: Missing authorization header."
+        403:
+          description: "Forbidden: Insufficient permissions to undo transactions."
+        404:
+          description: "Not Found: Transaction with the specified ID was not found."
+        409:
+          description: "Conflict: Objects have changed since the original transaction and force parameter was not used."
+        422:
+          description: "Unprocessable Entity: Invalid or bad parameter provided."
+
 
 
 ##############################################################################
@@ -7640,6 +7943,43 @@ definitions:
       access_token:
         description: Access token
         type: string
+
+  OIDCConfig:
+    type: object
+    properties:
+      enabled:
+        description: Whether OIDC authentication is enabled
+        type: boolean
+        example: true
+      providers:
+        description: List of available OIDC providers
+        type: array
+        items:
+          $ref: "#/definitions/OIDCProvider"
+      disable_local_auth:
+        description: Whether local username/password authentication is disabled
+        type: boolean
+        example: false
+      auto_redirect:
+        description: Whether to automatically redirect to OIDC when only one provider is configured
+        type: boolean
+        example: false
+
+  OIDCProvider:
+    type: object
+    properties:
+      id:
+        description: Provider identifier
+        type: string
+        example: "google"
+      name:
+        description: Provider display name
+        type: string
+        example: "Google"
+      login_url:
+        description: URL to initiate login with this provider
+        type: string
+        example: "https://api.example.com/oidc/login/?provider=google"
 
 ##############################################################################
 # Model - Date
