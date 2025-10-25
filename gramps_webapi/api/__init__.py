@@ -51,7 +51,11 @@ from .resources.facts import FactsResource
 from .resources.families import FamiliesResource, FamilyResource
 from .resources.file import MediaFileResource
 from .resources.filters import FilterResource, FiltersResource, FiltersResources
-from .resources.history import TransactionHistoryResource, TransactionsHistoryResource
+from .resources.history import (
+    TransactionHistoryResource,
+    TransactionUndoResource,
+    TransactionsHistoryResource,
+)
 from .resources.holidays import HolidayResource, HolidaysResource
 from .resources.import_media import MediaUploadZipResource
 from .resources.importers import (
@@ -91,6 +95,14 @@ from .resources.token import (
     TokenCreateOwnerResource,
     TokenRefreshResource,
     TokenResource,
+)
+from .resources.oidc import (
+    OIDCBackchannelLogoutResource,
+    OIDCCallbackResource,
+    OIDCConfigResource,
+    OIDCLoginResource,
+    OIDCLogoutResource,
+    OIDCTokenExchangeResource,
 )
 from .resources.transactions import TransactionsResource
 from .resources.translations import TranslationResource, TranslationsResource
@@ -144,10 +156,26 @@ register_endpt(
     "/transactions/history/<int:transaction_id>",
     "transaction_history",
 )
+register_endpt(
+    TransactionUndoResource,
+    "/transactions/history/<int:transaction_id>/undo",
+    "transaction_undo",
+)
 # Token
 register_endpt(TokenResource, "/token/", "token")
 register_endpt(TokenRefreshResource, "/token/refresh/", "token_refresh")
 register_endpt(TokenCreateOwnerResource, "/token/create_owner/", "token_create_owner")
+# OIDC
+register_endpt(OIDCLoginResource, "/oidc/login/", "oidcloginresource")
+register_endpt(OIDCCallbackResource, "/oidc/callback/", "oidccallbackresource")
+register_endpt(OIDCConfigResource, "/oidc/config/", "oidcconfigresource")
+register_endpt(OIDCTokenExchangeResource, "/oidc/tokens/", "oidctokenexchangeresource")
+register_endpt(OIDCLogoutResource, "/oidc/logout/", "oidclogoutresource")
+register_endpt(
+    OIDCBackchannelLogoutResource,
+    "/oidc/backchannel-logout/",
+    "oidcbackchannellogoutresource",
+)
 # People
 register_endpt(
     PersonTimelineResource, "/people/<string:handle>/timeline", "person-timeline"

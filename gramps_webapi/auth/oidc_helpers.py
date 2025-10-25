@@ -1,7 +1,7 @@
 #
 # Gramps Web API - A RESTful API for the Gramps genealogy program
 #
-# Copyright (C) 2021      David Straub
+# Copyright (C) 2025           Alexander Bocken
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -17,23 +17,15 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 
-"""Test consistent version numbers."""
+"""OIDC helper functions that must be in a separate module to avoid circular imports.
 
-import unittest
-from importlib.resources import as_file, files
+This module contains only the minimal set of functions needed by other modules
+before oidc.py is fully initialized. It must not import from api modules.
+"""
 
-import yaml
-
-from gramps_webapi import __version__
+from flask import current_app
 
 
-class TestVersion(unittest.TestCase):
-    """Test the version specifiers are consistent."""
-
-    def test_version(self):
-        """Test version in setup and apispec are equal."""
-        ref = files("gramps_webapi") / "data/apispec.yaml"
-        with as_file(ref) as file_path:
-            with open(file_path, encoding="utf-8") as file_handle:
-                schema = yaml.safe_load(file_handle)
-        self.assertEqual(__version__, schema["info"]["version"])
+def is_oidc_enabled() -> bool:
+    """Check if OIDC is enabled in the current app."""
+    return current_app.config.get("OIDC_ENABLED", False)

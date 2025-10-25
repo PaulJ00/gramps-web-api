@@ -19,7 +19,7 @@
 
 """Authentication endpoint blueprint."""
 
-from typing import Any, Iterable
+from typing import Any, Iterable, Optional
 
 import logging
 from flask import abort, current_app
@@ -40,6 +40,7 @@ from ...auth import (
     get_permissions,
     is_tree_disabled,
 )
+from ...auth.oidc_helpers import is_oidc_enabled
 from ...auth.const import CLAIM_LIMITED_SCOPE, SCOPE_CREATE_ADMIN, SCOPE_CREATE_OWNER
 from ...const import TREE_MULTI
 from ..ratelimiter import limiter
@@ -53,11 +54,14 @@ def get_tokens(
     tree_id: str,
     include_refresh: bool = False,
     fresh: bool = False,
+    oidc_provider: Optional[str] = None,
 ):
     """Create access token (and refresh token if desired)."""
     claims: dict[str, Any] = {"permissions": list(permissions)}
     if tree_id:
         claims["tree"] = tree_id
+    if oidc_provider:
+        claims["oidc_provider"] = oidc_provider
     access_token = create_access_token(
         identity=str(user_id), additional_claims=claims, fresh=fresh
     )
@@ -83,6 +87,11 @@ class TokenResource(Resource):
     )
     def post(self, args):
         """Post username and password to fetch a token."""
+        # Check if local authentication is disabled when OIDC is enabled
+        if (is_oidc_enabled() and
+            current_app.config.get("OIDC_DISABLE_LOCAL_AUTH", False)):
+            abort_with_message(403, "Local authentication is disabled. Please use OIDC authentication.")
+
         if "username" not in args or "password" not in args:
             abort_with_message(401, "Missing username or password")
         if not authorized(args.get("username"), args.get("password")):

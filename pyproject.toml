@@ -13,7 +13,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "gramps[all]>=6.0.4,<6.1.0",
     "PYGObject<=3.50.0",
@@ -31,7 +31,7 @@ dependencies = [
     "webargs",
     "SQLAlchemy>=2.0.0",
     "pdf2image",
-    "Pillow",
+    "Pillow<12.0.0",
     "bleach[css]>=5.0.0",
     "jsonschema",
     "ffmpeg-python",
@@ -45,12 +45,13 @@ dependencies = [
     "sifts>=0.8.3",
     "requests",
     "yclade>=0.5.0",
+    "Authlib>=1.6.4",
 ]
 
 [project.optional-dependencies]
-ai = ["sentence-transformers==3.*", "openai", "accelerate"]
+ai = ["sentence-transformers[onnx,openvino]", "openai", "accelerate"]
 test = ["pytest", "PyYAML"]
-all = ["sentence-transformers==3.*", "openai", "accelerate", "pytest", "PyYAML"]
+all = ["sentence-transformers[onnx,openvino]", "openai", "accelerate", "pytest", "PyYAML"]
 
 [project.urls]
 homepage = "https://github.com/gramps-project/gramps-web-api"
